@@ -17,12 +17,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { LoaderIcon } from "lucide-react";
 
 const formSchema = z.object({
     email: z.string().email(),
 });
 
 export function ProfileForm({ sendEmail }: any) {
+    const [pending, setPending] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
     // 1. Define your form.
@@ -36,6 +39,7 @@ export function ProfileForm({ sendEmail }: any) {
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
+            setPending(true);
             await sendEmail(values);
             toast({
                 description: "Email sent successfully",
@@ -43,6 +47,7 @@ export function ProfileForm({ sendEmail }: any) {
         } catch (error) {
             console.log(error);
         } finally {
+            setPending(false);
             router.push(`success?query=${values.email}`);
         }
     }
@@ -74,8 +79,12 @@ export function ProfileForm({ sendEmail }: any) {
                         </FormItem>
                     )}
                 />
-                <Button size="sm" type="submit">
-                    Subscribe to monthly newsletter
+                <Button disabled={pending} size="sm" type="submit">
+                    {pending ? (
+                        <LoaderIcon className=" animate-spin " />
+                    ) : (
+                        "Subscribe to monthly newsletter"
+                    )}
                 </Button>
             </form>
         </Form>
